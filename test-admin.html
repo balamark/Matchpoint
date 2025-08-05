@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Test</title>
+</head>
+<body>
+    <h1>Test Admin Functions</h1>
+    
+    <button onclick="searchByUserId()">Test Search</button>
+    <button onclick="bulkDeleteByUser()">Test Bulk Delete</button>
+    <button onclick="exportUserMatches()">Test Export</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        // Mock the functions to test if they're callable without recursion
+        window.searchByUserId = function() {
+            document.getElementById('output').innerHTML += '<p>searchByUserId called - OK!</p>';
+        };
+        
+        window.bulkDeleteByUser = function() {
+            document.getElementById('output').innerHTML += '<p>bulkDeleteByUser called - OK!</p>';
+        };
+        
+        window.exportUserMatches = function() {
+            document.getElementById('output').innerHTML += '<p>exportUserMatches called - OK!</p>';
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "tennis-match-finder",
+  "version": "1.0.0",
+  "description": "A retro terminal-style webapp for finding tennis partners",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "serve": "python3 -m http.server 8080",
+    "serve-node": "npx http-server -p 8080"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "keywords": [
+    "tennis",
+    "match-finder",
+    "terminal",
+    "webapp",
+    "supabase"
+  ],
+  "author": "Tennis Terminal",
+  "license": "MIT"
+}

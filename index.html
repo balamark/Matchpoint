@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎾 Tennis Terminal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <h1 id="title">🎾 TENNIS TERMINAL</h1>
+            <div class="terminal-controls">
+                <span class="control red"></span>
+                <span class="control yellow"></span>
+                <span class="control green"></span>
+            </div>
+        </div>
+        
+        <div class="terminal-body">
+            <div class="prompt-line">
+                <span class="prompt">$</span>
+                <span id="current-status">tennis-match-finder --init</span>
+            </div>
+            <div class="system-info">
+                <span id="system-description">System ready • Add your match details to find compatible tennis partners • Smart grouping by skill level and time overlap</span>
+            </div>
+            
+            <div class="section">
+                <h2 id="form-title">ENTER MATCH DETAILS</h2>
+                <div class="separator">--------------------------------------------------</div>
+                
+                <form id="match-form" class="form-grid">
+                    <div class="form-row">
+                        <label for="user-id" id="label-user-id">User ID:</label>
+                        <input type="text" id="user-id" name="user-id" placeholder="Enter your unique ID" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="player-name" id="label-name">Player Name:</label>
+                        <input type="text" id="player-name" name="player-name" placeholder="Enter your name" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="ntrp-rating" id="label-rating">NTRP Rating:</label>
+                        <select id="ntrp-rating" name="ntrp-rating" required>
+                            <option value="" id="select-rating">Select rating</option>
+                            <option value="2.0">2.0</option>
+                            <option value="2.5">2.5</option>
+                            <option value="3.0">3.0</option>
+                            <option value="3.5">3.5</option>
+                            <option value="4.0" selected>4.0</option>
+                            <option value="4.5">4.5</option>
+                            <option value="5.0">5.0</option>
+                            <option value="5.5">5.5</option>
+                            <option value="6.0">6.0</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="match-type" id="label-type">Match Type:</label>
+                        <select id="match-type" name="match-type" required>
+                            <option value="" id="select-type">Select type</option>
+                            <option value="singles" id="option-singles">Singles</option>
+                            <option value="doubles" id="option-doubles" selected>Doubles</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label id="label-day">Days Available:</label>
+                        <div class="days-selection">
+                            <div class="day-presets">
+                                <button type="button" class="preset-btn" onclick="selectDayPreset('weekdays')" id="preset-weekdays">Weekdays</button>
+                                <button type="button" class="preset-btn" onclick="selectDayPreset('weekends')" id="preset-weekends">Weekends</button>
+                                <button type="button" class="preset-btn" onclick="selectDayPreset('all')" id="preset-all">All Days</button>
+                            </div>
+                            <div class="day-checkboxes">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="days" value="monday" id="day-monday">
+                                    <span id="check-monday">Monday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="days" value="tuesday" id="day-tuesday">
+                                    <span id="check-tuesday">Tuesday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="days" value="wednesday" id="day-wednesday">
+                                    <span id="check-wednesday">Wednesday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="days" value="thursday" id="day-thursday">
+                                    <span id="check-thursday">Thursday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="days" value="friday" id="day-friday">
+                                    <span id="check-friday">Friday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="days" value="saturday" id="day-saturday">
+                                    <span id="check-saturday">Saturday</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="days" value="sunday" id="day-sunday">
+                                    <span id="check-sunday">Sunday</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="start-time" id="label-start">Start Time:</label>
+                        <select id="start-time" name="start-time" required>
+                            <option value="" id="select-start-time">Select start time</option>
+                            <option value="06:00">06:00</option>
+                            <option value="06:30">06:30</option>
+                            <option value="07:00">07:00</option>
+                            <option value="07:30">07:30</option>
+                            <option value="08:00">08:00</option>
+                            <option value="08:30">08:30</option>
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:30">12:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00" selected>18:00</option>
+                            <option value="18:30">18:30</option>
+                            <option value="19:00">19:00</option>
+                            <option value="19:30">19:30</option>
+                            <option value="20:00">20:00</option>
+                            <option value="20:30">20:30</option>
+                            <option value="21:00">21:00</option>
+                            <option value="21:30">21:30</option>
+                            <option value="22:00">22:00</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="end-time" id="label-end">End Time:</label>
+                        <select id="end-time" name="end-time" required>
+                            <option value="" id="select-end-time">Select end time</option>
+                            <option value="06:30">06:30</option>
+                            <option value="07:00">07:00</option>
+                            <option value="07:30">07:30</option>
+                            <option value="08:00">08:00</option>
+                            <option value="08:30">08:30</option>
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="12:00">12:00</option>
+                            <option value="12:30">12:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                            <option value="18:30">18:30</option>
+                            <option value="19:00">19:00</option>
+                            <option value="19:30">19:30</option>
+                            <option value="20:00" selected>20:00</option>
+                            <option value="20:30">20:30</option>
+                            <option value="21:00">21:00</option>
+                            <option value="21:30">21:30</option>
+                            <option value="22:00">22:00</option>
+                            <option value="22:30">22:30</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" id="add-match-btn">▶ Add Match Slot</button>
+                </form>
+                
+                <div class="filter-section">
+                    <h3 id="filter-title">Filter by Day Type:</h3>
+                    <div class="filter-buttons">
+                        <button type="button" class="filter-btn active" id="filter-all" onclick="filterMatches('all')">All Days</button>
+                        <button type="button" class="filter-btn" id="filter-weekdays" onclick="filterMatches('weekdays')">Weekdays</button>
+                        <button type="button" class="filter-btn" id="filter-weekends" onclick="filterMatches('weekends')">Weekends</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 id="matches-title">📆 CURRENT MATCHED GAMES:</h2>
+                <div class="separator">--------------------------------------------------</div>
+                <div id="matches-list" class="matches-container">
+                    <div class="loading-message" id="loading-msg">Loading matches...</div>
+                </div>
+            </div>
+            
+            <div class="language-selector">
+                <button onclick="changeLanguage('en')" class="lang-btn active" id="lang-en">EN</button>
+                <button onclick="changeLanguage('de')" class="lang-btn" id="lang-de">DE</button>
+                <button onclick="changeLanguage('fr')" class="lang-btn" id="lang-fr">FR</button>
+                <button onclick="changeLanguage('zh')" class="lang-btn" id="lang-zh">ZH</button>
+            </div>
+            
+            <div class="demo-controls">
+                <button onclick="loadDemoPlayers()" class="demo-btn" title="Load 10 demo players">🎾 Demo</button>
+                <button onclick="toggleAdminMode()" class="demo-btn" id="admin-btn" title="Admin mode">🔐 Admin</button>
+                <button onclick="downloadMatches()" class="demo-btn" title="Download matches as JSON">💾 Export</button>
+                <input type="file" id="file-upload" accept=".json" style="display: none;" onchange="uploadMatches(event)">
+                <button onclick="document.getElementById('file-upload').click()" class="demo-btn" title="Upload matches from JSON">📁 Import</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
