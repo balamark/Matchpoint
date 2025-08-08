@@ -201,6 +201,15 @@
                         <button type="button" class="filter-btn" id="filter-weekends" onclick="filterMatches('weekends')">Weekends</button>
                     </div>
                 </div>
+                
+                <div class="search-section">
+                    <h3 id="search-title">Search Matches:</h3>
+                    <div class="search-controls">
+                        <input type="text" id="search-input" placeholder="Search by player name or user ID" />
+                        <button type="button" class="search-btn" onclick="searchMatches()" id="search-btn">Search</button>
+                        <button type="button" class="clear-search-btn" onclick="clearSearch()" id="clear-search-btn">Clear</button>
+                    </div>
+                </div>
             </div>
             
             <div class="section">
@@ -212,10 +221,11 @@
             </div>
             
             <div class="language-selector">
-                <button onclick="changeLanguage('en')" class="lang-btn active" id="lang-en">EN</button>
-                <button onclick="changeLanguage('de')" class="lang-btn" id="lang-de">DE</button>
-                <button onclick="changeLanguage('fr')" class="lang-btn" id="lang-fr">FR</button>
-                <button onclick="changeLanguage('zh')" class="lang-btn" id="lang-zh">ZH</button>
+                <button onclick="changeLanguage('en')" class="lang-btn active" id="lang-en">🇺🇸 EN</button>
+                <button onclick="changeLanguage('de')" class="lang-btn" id="lang-de">🇩🇪 DE</button>
+                <button onclick="changeLanguage('fr')" class="lang-btn" id="lang-fr">🇫🇷 FR</button>
+                <button onclick="changeLanguage('zh')" class="lang-btn" id="lang-zh">🇹🇼 ZH</button>
+                <button onclick="toggleDarkTheme()" class="theme-btn" id="theme-btn" title="Toggle Dark Theme">🌙</button>
             </div>
             
             <div class="demo-controls">

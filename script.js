@@ -69,7 +69,15 @@ const TEXTS = {
         adminPassword: "Enter admin password:",
         wrongPassword: "Wrong password!",
         adminModeActive: "Admin mode active",
-        placeholderUserId: "Enter your unique ID"
+        placeholderUserId: "Enter your unique ID",
+        searchTitle: "Search Matches:",
+        searchPlaceholder: "Search by player name or user ID",
+        searchBtn: "Search",
+        clearSearchBtn: "Clear",
+        searchResults: "Search Results",
+        noSearchResults: "No matches found for your search",
+        darkTheme: "Dark Theme",
+        lightTheme: "Light Theme"
     },
     de: {
         title: "🎾 TENNIS-TERMINAL",
@@ -140,7 +148,15 @@ const TEXTS = {
         adminPassword: "Admin-Passwort eingeben:",
         wrongPassword: "Falsches Passwort!",
         adminModeActive: "Admin-Modus aktiv",
-        placeholderUserId: "Geben Sie Ihre eindeutige ID ein"
+        placeholderUserId: "Geben Sie Ihre eindeutige ID ein",
+        searchTitle: "Spiele suchen:",
+        searchPlaceholder: "Nach Spielername oder Benutzer-ID suchen",
+        searchBtn: "Suchen",
+        clearSearchBtn: "Löschen",
+        searchResults: "Suchergebnisse",
+        noSearchResults: "Keine Spiele für Ihre Suche gefunden",
+        darkTheme: "Dunkles Theme",
+        lightTheme: "Helles Theme"
     },
     fr: {
         title: "🎾 TERMINAL DE TENNIS",
@@ -211,7 +227,15 @@ const TEXTS = {
         adminPassword: "Entrez le mot de passe admin:",
         wrongPassword: "Mot de passe incorrect!",
         adminModeActive: "Mode admin actif",
-        placeholderUserId: "Entrez votre ID unique"
+        placeholderUserId: "Entrez votre ID unique",
+        searchTitle: "Rechercher des matchs:",
+        searchPlaceholder: "Rechercher par nom de joueur ou ID utilisateur",
+        searchBtn: "Rechercher",
+        clearSearchBtn: "Effacer",
+        searchResults: "Résultats de recherche",
+        noSearchResults: "Aucun match trouvé pour votre recherche",
+        darkTheme: "Thème Sombre",
+        lightTheme: "Thème Clair"
     },
     zh: {
         title: "🎾 網球終端機",
@@ -262,7 +286,7 @@ const TEXTS = {
         selectDays: "選擇日期",
         selectStartTime: "選擇開始時間",
         selectEndTime: "選擇結束時間",
-        clickToSeeDetails: "點擊查看詳情",
+        clickToSeeDetails: "",
         filterByDayType: "按日期類型篩選:",
         systemDescription: "系統就緒 • 添加您的比賽詳情以尋找合適的網球夥伴 • 根據技能水平和時間重疊進行智能分組",
         spot: "名額",
@@ -282,7 +306,15 @@ const TEXTS = {
         adminPassword: "輸入管理員密碼:",
         wrongPassword: "密碼錯誤！",
         adminModeActive: "管理員模式已啟動",
-        placeholderUserId: "輸入您的唯一ID"
+        placeholderUserId: "輸入您的唯一ID",
+        searchTitle: "搜尋比賽:",
+        searchPlaceholder: "按球員姓名或用戶ID搜尋",
+        searchBtn: "搜尋",
+        clearSearchBtn: "清除",
+        searchResults: "搜尋結果",
+        noSearchResults: "找不到符合您搜尋的比賽",
+        darkTheme: "深色主題",
+        lightTheme: "淺色主題"
     }
 };
 
@@ -292,6 +324,7 @@ let supabase;
 let matches = [];
 let isAdminMode = false;
 let currentUserId = null;
+let isDarkTheme = false;
 
 // Initialize language detection
 function detectLanguage() {
@@ -415,8 +448,19 @@ function updateTexts() {
     // Update placeholders with null checks
     const userId = document.getElementById('user-id');
     const playerName = document.getElementById('player-name');
+    const searchInput = document.getElementById('search-input');
     if (userId) userId.placeholder = t.placeholderUserId;
     if (playerName) playerName.placeholder = t.placeholderName;
+    if (searchInput) searchInput.placeholder = t.searchPlaceholder;
+    
+    // Update search elements
+    const searchTitle = document.getElementById('search-title');
+    const searchBtn = document.getElementById('search-btn');
+    const clearSearchBtn = document.getElementById('clear-search-btn');
+    
+    if (searchTitle) searchTitle.textContent = t.searchTitle;
+    if (searchBtn) searchBtn.textContent = t.searchBtn;
+    if (clearSearchBtn) clearSearchBtn.textContent = t.clearSearchBtn;
     
     // Re-render matches with new language
     displayMatches();
@@ -505,11 +549,18 @@ function groupMatches(matchesData) {
         
         processed.add(index);
         
-        // Find compatible matches
+        // Find compatible matches (avoiding duplicates by user ID)
         matchesData.forEach((otherMatch, otherIndex) => {
             if (processed.has(otherIndex) || index === otherIndex) return;
             
-            if (match.day_of_week === otherMatch.day_of_week &&
+            // Check if this user is already in the group
+            const otherUserId = otherMatch.original_user_id || otherMatch.user_id;
+            const isUserAlreadyInGroup = group.players.some(player => 
+                (player.original_user_id || player.user_id) === otherUserId
+            );
+            
+            if (!isUserAlreadyInGroup &&
+                match.day_of_week === otherMatch.day_of_week &&
                 match.match_type === otherMatch.match_type &&
                 timeOverlap(match.start_time, match.end_time, otherMatch.start_time, otherMatch.end_time) &&
                 ratingCompatible(match.ntrp_rating, otherMatch.ntrp_rating)) {
@@ -530,7 +581,23 @@ function groupMatches(matchesData) {
         groups.push(group);
     });
     
+    // Sort groups with current user matches at the top
+    const currentUser = getCurrentUserId();
+    
     return groups.sort((a, b) => {
+        // Check if current user is in each group
+        const aHasCurrentUser = currentUser && a.players.some(player => 
+            (player.original_user_id === currentUser || player.user_id === currentUser)
+        );
+        const bHasCurrentUser = currentUser && b.players.some(player => 
+            (player.original_user_id === currentUser || player.user_id === currentUser)
+        );
+        
+        // Prioritize groups with current user
+        if (aHasCurrentUser && !bHasCurrentUser) return -1;
+        if (!aHasCurrentUser && bHasCurrentUser) return 1;
+        
+        // If both or neither have current user, sort by day and time
         const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
         const dayDiff = dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
         if (dayDiff !== 0) return dayDiff;
@@ -545,20 +612,32 @@ function displayMatches() {
     
     if (!container) return;
     
-    // Filter matches based on current filter
+    // Filter matches based on current filter and search
     let filteredMatches = matches;
+    
+    // Apply day filter
     if (currentFilter === 'weekdays') {
-        filteredMatches = matches.filter(match => 
+        filteredMatches = filteredMatches.filter(match => 
             ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].includes(match.day_of_week)
         );
     } else if (currentFilter === 'weekends') {
-        filteredMatches = matches.filter(match => 
+        filteredMatches = filteredMatches.filter(match => 
             ['saturday', 'sunday'].includes(match.day_of_week)
         );
     }
     
+    // Apply search filter
+    if (isSearchActive && currentSearchTerm) {
+        filteredMatches = filteredMatches.filter(match => {
+            const playerName = (match.player_name || '').toLowerCase();
+            const userId = (match.original_user_id || match.user_id || '').toLowerCase();
+            return playerName.includes(currentSearchTerm) || userId.includes(currentSearchTerm);
+        });
+    }
+    
     if (filteredMatches.length === 0) {
-        container.innerHTML = `<div class="empty-message">${t.emptyMsg}</div>`;
+        const message = isSearchActive ? t.noSearchResults : t.emptyMsg;
+        container.innerHTML = `<div class="empty-message">${message}</div>`;
         return;
     }
     
@@ -572,8 +651,14 @@ function displayMatches() {
         const spotsNeeded = maxPlayers - group.players.length;
         const matchTypeText = t[group.matchType] || group.matchType || 'Match';
         
+        // Check if current user is in this group
+        const currentUser = getCurrentUserId();
+        const hasCurrentUser = currentUser && group.players.some(player => 
+            (player.original_user_id === currentUser || player.user_id === currentUser)
+        );
+        
         return `
-            <div class="match-group ${!isFull ? 'clickable' : ''}" ${!isFull ? `onclick="toggleMatchDetails(${groupIndex})"` : ''}>
+            <div class="match-group ${hasCurrentUser ? 'current-user-match' : ''}">
                 <div class="match-header">
                     <div class="match-time">${dayShort} ${group.startTime}–${group.endTime}</div>
                     <div class="match-details">
@@ -583,19 +668,21 @@ function displayMatches() {
                         </span>
                         <span>${matchTypeText}</span>
                         <span class="avg-rating">${t.avgRating}: ${group.avgRating.toFixed(1)}</span>
-                        ${isFull ? `<span class="full-group">${t.fullGroup}</span>` : `<span class="join-hint">${t.clickToSeeDetails}</span>`}
+                        ${isFull ? `<span class="full-group">${t.fullGroup}</span>` : ''}
+                        ${hasCurrentUser ? '<span class="current-user-indicator">👤 Your Match</span>' : ''}
                     </div>
                 </div>
-                <div class="players-list" id="players-list-${groupIndex}" style="${!isFull ? 'display: none;' : ''}">
+                <div class="players-list">
                     ${group.players.map(player => {
                         const playerName = player.player_name || player.name || 'Unknown Player';
                         const playerRating = player.ntrp_rating || player.rating || 'No rating';
+                        const isCurrentUserPlayer = currentUser && (player.original_user_id === currentUser || player.user_id === currentUser);
                         const editButtons = !player.isDemo && isAdminMode ? 
                             `<span class="match-controls">
                                 <button class="edit-btn" onclick="editMatch('${player.id}')" title="${t.editMatch}">✏️</button>
                                 <button class="delete-btn" onclick="deleteMatch('${player.id}')" title="${t.deleteMatch}">❌</button>
                             </span>` : '';
-                        return `<div class="player-item">• ${playerName} (${playerRating}) ${editButtons}</div>`;
+                        return `<div class="player-item ${isCurrentUserPlayer ? 'current-user-player' : ''}">• ${playerName} (${playerRating}) ${editButtons}</div>`;
                     }).join('')}
                 </div>
             </div>
@@ -850,6 +937,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Global filter state
 let currentFilter = 'all';
+let currentSearchTerm = '';
+let isSearchActive = false;
 
 // Filter matches by day type
 function filterMatches(filterType) {
@@ -861,6 +950,96 @@ function filterMatches(filterType) {
     
     displayMatches();
 }
+
+// Search matches
+function searchMatches() {
+    const searchInput = document.getElementById('search-input');
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    
+    if (!searchTerm) {
+        clearSearch();
+        return;
+    }
+    
+    currentSearchTerm = searchTerm;
+    isSearchActive = true;
+    
+    // Update matches title to show search results
+    const matchesTitle = document.getElementById('matches-title');
+    const t = TEXTS[currentLanguage];
+    if (matchesTitle) {
+        matchesTitle.textContent = `🔍 ${t.searchResults}: "${searchTerm}"`;
+    }
+    
+    displayMatches();
+}
+
+// Clear search
+function clearSearch() {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
+    
+    currentSearchTerm = '';
+    isSearchActive = false;
+    
+    // Restore original matches title
+    const matchesTitle = document.getElementById('matches-title');
+    const t = TEXTS[currentLanguage];
+    if (matchesTitle) {
+        matchesTitle.textContent = t.matchesTitle;
+    }
+    
+    displayMatches();
+}
+
+// Dark theme toggle
+function toggleDarkTheme() {
+    isDarkTheme = !isDarkTheme;
+    const body = document.body;
+    const themeBtn = document.getElementById('theme-btn');
+    const t = TEXTS[currentLanguage];
+    
+    if (isDarkTheme) {
+        body.classList.add('dark-theme');
+        if (themeBtn) {
+            themeBtn.textContent = '☀️';
+            themeBtn.title = t.lightTheme;
+        }
+    } else {
+        body.classList.remove('dark-theme');
+        if (themeBtn) {
+            themeBtn.textContent = '🌙';
+            themeBtn.title = t.darkTheme;
+        }
+    }
+    
+    // Save preference
+    localStorage.setItem('dark-theme', isDarkTheme.toString());
+}
+
+// Load dark theme preference
+function loadThemePreference() {
+    const savedTheme = localStorage.getItem('dark-theme');
+    if (savedTheme === 'true') {
+        isDarkTheme = false; // Set to false so toggle switches it to true
+        toggleDarkTheme();
+    }
+}
+
+// Add Enter key support for search
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchMatches();
+            }
+        });
+    }
+    
+    // Load theme preference
+    loadThemePreference();
+});
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1028,14 +1207,6 @@ function loadDemoPlayers() {
     }
 }
 
-// Toggle match details visibility
-function toggleMatchDetails(groupIndex) {
-    const playersList = document.getElementById(`players-list-${groupIndex}`);
-    if (playersList) {
-        const isVisible = playersList.style.display !== 'none';
-        playersList.style.display = isVisible ? 'none' : 'block';
-    }
-}
 
 // Day preset selection functions
 function selectDayPreset(preset) {
@@ -1679,7 +1850,6 @@ window.changeLanguage = changeLanguage;
 window.loadDemoPlayers = loadDemoPlayers;
 window.downloadMatches = downloadMatches;
 window.uploadMatches = uploadMatches;
-window.toggleMatchDetails = toggleMatchDetails;
 window.filterMatches = filterMatches;
 window.selectDayPreset = selectDayPreset;
 window.toggleAdminMode = toggleAdminMode;
@@ -1691,3 +1861,6 @@ window.showAllMatches = showAllMatches;
 window.bulkDeleteByUser = handleBulkDeleteByUser;
 window.exportUserMatches = handleExportUserMatches;
 window.showUserStats = showUserStats;
+window.searchMatches = searchMatches;
+window.clearSearch = clearSearch;
+window.toggleDarkTheme = toggleDarkTheme;
